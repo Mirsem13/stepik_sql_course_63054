@@ -79,21 +79,17 @@ from book
 group by author
 
 1.3.4
-select author, min(price) as Минимальная_цена, max(price) as Максимальная_цена, avg(price) as Средняя_цена
-from book
-group by author
+SELECT author, MIN(price) as Минимальная_цена, MAX(price) as Максимальная_цена, AVG(price) as Средняя_цена
+FROM book
+GROUP BY author;
 
 1.3.5
-select 
-  author, 
-  sum(price*amount) as Стоимость, 
-  round(sum(price*amount)*0.18/1.18, 2) as НДС, 
-  round(sum(price*amount)/1.18, 2) as Стоимость_без_НДС
-from book
-group by author
+SELECT author, SUM(price * amount) AS Стоимость, ROUND(SUM(price * amount) /118*18,2) AS НДС, ROUND(SUM(price*amount)-SUM(price*amount) /118*18,2) AS Стоимость_без_НДС
+FROM book
+GROUP BY author;
 
 1.3.6
-select min(price) as Минимальная_цена, max(price) as Максимальная_цена, round(avg(price), 2) as Средняя_цена
+select min(price) as Минимальная_цена, max(price) as Максимальная_цена, round(avg(price),2) as Средняя_цена
 from book
 
 1.3.7
@@ -108,6 +104,13 @@ where title not in ("Идиот", "Белая гвардия")
 group by author
 having sum(price*amount) > 5000
 order by Стоимость desc
+
+1.3.9
+SELECT book_id AS Порядковый_номер, author AS Автор, ROUND(AVG(price)) AS Средняя_цена
+FROM book
+GROUP BY book_id, author
+HAVING Порядковый_номер > 2
+
 
 1.4.2
 select author, title, price
