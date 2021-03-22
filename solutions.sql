@@ -1,24 +1,28 @@
-1.1.6
-create table book (book_id int primary key auto_increment, title varchar(50), author varchar(30), price decimal(8,2), 
-amount int);
-
 1.1.7
-insert into book (book_id, title, author, price, amount) values (1, "Мастер и Маргарита", "Булгаков М.А.",
-                                                                670.99, 3)
-                                                                
+CREATE TABLE book(
+    book_id INT PRIMARY KEY AUTO_INCREMENT, 
+    title VARCHAR(50),
+    author VARCHAR(30),
+    price DECIMAL(8, 2),
+    amount INT
+);
+
 1.1.8
-insert into book (book_id, title, author, price, amount) values (2, "Белая гвардия", "Булгаков М.А.",
-                                                                540.50, 5);
-insert into book (book_id, title, author, price, amount) values (3, "Идиот", "Достоевский Ф.М.",
-                                                                460.00, 10);
-insert into book (book_id, title, author, price, amount) values (4, "Братья Карамазовы", "Достоевский Ф.М.",
-                                                                799.01, 2);
+INSERT INTO book (book_id,title,author,price,amount) VALUES  ('1','Мастер и Маргарита','Булгаков М.А.','670.99','3');
+SELECT * FROM book;
                                                                 
+1.1.9
+INSERT INTO book (title,author,price,amount) VALUES  ('Белая гвардия','Булгаков М.А.','540.50','5');
+INSERT INTO book (title,author,price,amount) VALUES  ('Идиот','Достоевский Ф.М.','460.00','10');
+INSERT INTO book (title,author,price,amount) VALUES  ('Братья Карамазовы','Достоевский Ф.М.','799.01','2');
+SELECT * FROM book;
+
 1.2.2
 select * from book
 
 1.2.3
-select author, title, price from book
+SELECT author, title, price 
+FROM book;
 
 1.2.4
 select title as Название, author as Автор from book
@@ -49,15 +53,19 @@ select title, author from book
 where  price between 540.50 and 800 and amount in (2,3,5,7)
 
 1.2.11
-select title, author from book where title like "_% _%" and author like "% С.%" 
-
+SELECT title, author
+FROM book
+WHERE title LIKE '_% _%' AND author LIKE '%С.%' 
 1.2.12
 select author, title from book
 where amount between 2 and 14
 order by author desc, title
 
 1.2.13
-select * from book where author like '%Дос%'
+SELECT author, title
+FROM book
+Where amount BETWEEN 2 and 14
+ORDER BY author DESC, title ASC;
 
 1.3.2
 select distinct amount from book
