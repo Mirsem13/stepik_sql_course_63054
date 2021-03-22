@@ -157,7 +157,13 @@ having Заказ>0
 Select author from book;
 
 1.5.2
-create table supply(supply_id INT PRIMARY KEY AUTO_INCREMENT, title VARCHAR(50), author VARCHAR(30), price DECIMAL(8, 2), amount INT)
+CREATE TABLE supply(
+	supply_id INT PRIMARY KEY AUTO_INCREMENT,
+	title VARCHAR(50),
+	author VARCHAR(30),
+	price DECIMAL(8, 2),
+	amount INT
+);
 
 1.5.3
 insert into supply(supply_id, title, author, price, amount) values (1, 'Лирика', 'Пастернак Б.Л.', 518.99, 2);
@@ -166,33 +172,59 @@ insert into supply(supply_id, title, author, price, amount) values (3, 'Бела
 insert into supply(supply_id, title, author, price, amount) values (4, 'Идиот', 'Достоевский Ф.М.', 360.80, 3);
 
 1.5.4
-insert into book (title, author, price, amount)
-select title, author, price, amount
-from supply
-where author not in ('Булгаков М.А.', 'Достоевский Ф.М.')
+INSERT INTO book (title, author, price, amount) 
+       SELECT title, author, price, amount 
+       FROM supply
+       where title <> ALL (SELECT title FROM book);
+
+SELECT * FROM book;
 
 1.5.5
-insert into book (title, author, price, amount)
-select title, author, price, amount
-from supply
-where author not in (select distinct author from book)
+INSERT INTO book (title, author, price, amount) 
+           SELECT title, author, price, amount 
+           FROM supply
+           WHERE author NOT IN (SELECT DISTINCT author FROM book);
+SELECT * FROM book;
 
 1.5.6
-update book set price = 0.9*price
-where amount between 5 and 10
+UPDATE book 
+SET price = 0.9 * price 
+WHERE amount in (5,10);
+
+SELECT * FROM book;
 
 1.5.7
-update book set buy=if(buy>amount, amount, buy)
+UPDATE book set buy=if(buy <= amount, buy, amount), price = if(buy = 0, price * 0.9, price);
+
+SELECT * FROM book;
 
 1.5.8
-update book, supply set book.amount=supply.amount+book.amount, book.price=(book.price+supply.price)/2
-where book.title=supply.title
+UPDATE book, supply 
+SET book.price = (book.price + supply.price)/2, 
+                        book.amount = book.amount+supply.amount
+WHERE book.title = supply.title;
+
+SELECT * FROM book;
 
 1.5.9
-delete from supply
-where supply.price in (select price from book) and supply.title in (select title from book)
+DELETE FROM supply
+
+WHERE amount =3 or amount =6;
+
+SELECT * FROM supply;
 
 1.5.10
+CREATE TABLE ordering AS
+       SELECT author, 
+              title, 
+              (SELECT round(AVG(amount)) FROM book) AS amount
+               FROM book
+               WHERE amount < (SELECT round(AVG(amount)) FROM book
+               );
+
+SELECT * FROM ordering;
+
+1.5.11
 create table ordering as
 select author, title, (select avg(amount) from book) as amount
 from book
@@ -255,43 +287,57 @@ order by name, Сумма desc
 select name, sum((datediff(date_last, date_first)+1)*per_diem) as Сумма
 from trip
 group by name
-having count(*) > 3
+ORDER by name
+LIMIT 2
 
 1.7.2
-create table fine(fine_id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(30), number_plate VARCHAR(6),
-                 violation VARCHAR(50), sum_fine DECIMAL(8,2), date_violation DATE, date_payment DATE)
+CREATE TABLE fine (fine_id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(30), number_plate VARCHAR(6), violation VARCHAR(50), sum_fine DECIMAL(8, 2), date_violation DATE, date_payment DATE);
+
+DESCRIBE fine;
                  
 1.7.3
-insert into fine(fine_id, name, number_plate, violation, sum_fine, date_violation, date_payment) 
-           values(6, "Баранов П.Е.", 'Р523ВТ', 'Превышение скорости(от 40 до 60)', Null, '2020-02-14', Null);
-insert into fine(fine_id, name, number_plate, violation, sum_fine, date_violation, date_payment) 
-           values(7, "Абрамова К.А.", 'О111АВ', 'Проезд на запрещающий сигнал', Null, '2020-02-23', Null);
-insert into fine(fine_id, name, number_plate, violation, sum_fine, date_violation, date_payment) 
-           values(8, "Яковлев Г.Р.", 'Т330ТТ', 'Проезд на запрещающий сигнал', Null, '2020-03-03', Null);
+INSERT INTO fine (name, number_plate, violation, sum_fine, date_violation, date_payment) 
+VALUES ('Баранов П.Е.', 'Р523ВТ', 'Превышение скорости(от 40 до 60)', Null, '2020-02-14', Null), 
+       ('Абрамова К.А.', 'О111АВ', 'Проезд на запрещающий сигнал', Null, '2020-02-23', Null), 
+       ('Яковлев Г.Р.', 'Т330ТТ', 'Проезд на запрещающий сигнал', Null, '2020-03-03', Null);
+
+/* Смотрим, что получилось */
+SELECT * FROM fine;
 
 1.7.4
-Update fine as f, traffic_violation as tv
-set f.sum_fine=tv.sum_fine
-where f.violation=tv.violation and f.sum_fine is null
+UPDATE fine AS f, traffic_violation AS tv
+SET f.sum_fine = tv.sum_fine
+WHERE tv.violation = f.violation and f.sum_fine IS Null;
+
+SELECT*FROM fine
+
 
 1.7.5
 select name, number_plate, violation
 from fine
-group by name, number_plate, violation
-having count(*) > 1
+where date_payment is Null
+    and (name, number_plate, violation) in (
+        select name, number_plate, violation
+        from fine
+        where date_payment is not Null
+        group by name, number_plate, violation
+    )
 order by name
 
 1.7.6
-update fine, (select name, number_plate, violation
-from fine
-group by name, number_plate, violation
-having count(*) > 1
-order by name) as new_fine
-set fine.sum_fine=fine.sum_fine*2
-where date_payment is null and 
-           new_fine.name=fine.name and 
-           new_fine.number_plate=fine.number_plate and 
-           new_fine.violation=fine.violation
+UPDATE 
+    fine f,
+    (SELECT name, number_plate, violation
+    FROM fine
+    GROUP BY name, number_plate, violation
+    HAVING COUNT(*) > 1) q_in
+SET f.sum_fine = f.sum_fine * 2
+WHERE
+    (f.name, f.number_plate, f.violation) = 
+    (q_in.name, q_in.number_plate, q_in.violation) AND
+    f.date_payment IS Null;
+
+SELECT * FROM fine;
 
 1.7.7
 update fine, payment
@@ -303,8 +349,10 @@ fine.violation=payment.violation and
 fine.date_payment is null
 
 1.7.8
-create table back_payment as (select name, number_plate, violation, sum_fine, date_violation from fine
-where date_payment is null) 
+CREATE TABLE back_payment(SELECT * FROM fine WHERE ISNULL(date_payment));
+ALTER TABLE back_payment DROP fine_id, DROP date_payment; 
+
+SELECT * FROM back_payment
 
 1.7.9
 delete from fine
