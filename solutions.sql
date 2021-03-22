@@ -113,33 +113,48 @@ HAVING Порядковый_номер > 2
 
 
 1.4.2
-select author, title, price
-from book
-where price<=(select avg(price) from book)
-order by price desc
+SELECT author, title, price   
+FROM book
+WHERE price <= (
+         SELECT AVG(price) 
+         FROM book
+      )
+      ORDER BY price DESC
+      ;
+
 
 1.4.3
-select author, title, price
-from book
-where price - (select min(price) from book) < 150
-order by price asc
+SELECT author, title, price
+FROM book
+WHERE (price - (SELECT MIN(price) FROM book)) <=150
+ORDER BY price;
 
 1.4.4
-select author, title, amount
-from book
-where amount in (select amount from book group by amount having count(amount)=1)
-
+SELECT author, title, amount
+FROM book
+WHERE amount IN (
+        SELECT amount 
+        FROM book 
+        GROUP BY amount 
+        HAVING count(amount) = 1
+      ); 
+	  
 1.4.5
-select author, title, price 
-from book
-where author in (select author from book
-                group by author
-                having avg(price) > (select avg(price) from book))
-                
+SELECT author, title, price
+FROM book
+WHERE price < ANY (
+        SELECT min(price) 
+        FROM book 
+        GROUP BY author 
+      );
+	  
 1.4.6
-select title, author, amount, (select max(amount) from book) - amount as Заказ
+select title, author, amount, (select max(amount) from book)- amount AS Заказ
 from book
-having Заказ > 0
+having Заказ>0
+
+1.4.7
+Select author from book;
 
 1.5.2
 create table supply(supply_id INT PRIMARY KEY AUTO_INCREMENT, title VARCHAR(50), author VARCHAR(30), price DECIMAL(8, 2), amount INT)
